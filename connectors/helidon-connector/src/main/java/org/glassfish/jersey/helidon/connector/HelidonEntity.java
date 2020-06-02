@@ -16,22 +16,6 @@
 
 package org.glassfish.jersey.helidon.connector;
 
-import io.helidon.common.GenericType;
-import io.helidon.common.http.DataChunk;
-import io.helidon.common.http.MediaType;
-import io.helidon.common.reactive.Multi;
-import io.helidon.common.reactive.OutputStreamPublisher;
-import io.helidon.common.reactive.Single;
-import io.helidon.media.common.ByteChannelBodyWriter;
-import io.helidon.media.common.ContentWriters;
-import io.helidon.media.common.MessageBodyContext;
-import io.helidon.media.common.MessageBodyWriter;
-import io.helidon.media.common.MessageBodyWriterContext;
-import io.helidon.webclient.WebClientRequestBuilder;
-import io.helidon.webclient.WebClientResponse;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.ClientRequest;
-
 import javax.ws.rs.ProcessingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,6 +24,21 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Flow;
 import java.util.function.Function;
+
+import io.helidon.common.GenericType;
+import io.helidon.common.http.DataChunk;
+import io.helidon.common.http.MediaType;
+import io.helidon.common.reactive.Multi;
+import io.helidon.common.reactive.OutputStreamPublisher;
+import io.helidon.common.reactive.Single;
+import io.helidon.media.common.ByteChannelBodyWriter;
+import io.helidon.media.common.ContentWriters;
+import io.helidon.media.common.MessageBodyWriter;
+import io.helidon.media.common.MessageBodyWriterContext;
+import io.helidon.webclient.WebClientRequestBuilder;
+import io.helidon.webclient.WebClientResponse;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.ClientRequest;
 
 /**
  * A utility class that converts outbound client entity to a class understandable by Helidon.
@@ -145,19 +144,21 @@ class HelidonEntity {
     }
 
     @SuppressWarnings("unchecked")
-    private static class OutputStreamBodyWriter implements MessageBodyWriter {
+    private static class OutputStreamBodyWriter implements MessageBodyWriter<ByteArrayOutputStream> {
         private OutputStreamBodyWriter() {
         }
 
         @Override
-        public Flow.Publisher<DataChunk> write(Single content, GenericType type, MessageBodyWriterContext context) {
+        public Flow.Publisher<DataChunk> write(Single<? extends ByteArrayOutputStream> content,
+                                               GenericType<? extends ByteArrayOutputStream> type,
+                                               MessageBodyWriterContext context) {
             context.contentType(MediaType.APPLICATION_OCTET_STREAM);
             return content.flatMap(new ByteArrayOutputStreamToChunks());
         }
 
         @Override
-        public boolean accept(GenericType type, MessageBodyContext context) {
-            return ByteArrayOutputStream.class.isAssignableFrom(type.rawType());
+        public PredicateResult accept(GenericType<?> type, MessageBodyWriterContext messageBodyWriterContext) {
+            return PredicateResult.supports(ByteArrayOutputStream.class, type);
         }
 
         private static class ByteArrayOutputStreamToChunks implements Function<ByteArrayOutputStream, Flow.Publisher<DataChunk>> {

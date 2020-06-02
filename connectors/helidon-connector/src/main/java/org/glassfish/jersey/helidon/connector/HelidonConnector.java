@@ -16,21 +16,6 @@
 
 package org.glassfish.jersey.helidon.connector;
 
-import io.helidon.common.Version;
-import io.helidon.webclient.WebClient;
-import io.helidon.webclient.WebClientRequestBuilder;
-import io.helidon.webclient.WebClientResponse;
-import org.glassfish.jersey.client.ClientAsyncExecutorLiteral;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.ClientRequest;
-import org.glassfish.jersey.client.ClientResponse;
-import org.glassfish.jersey.client.JerseyClient;
-import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
-import org.glassfish.jersey.client.spi.Connector;
-import org.glassfish.jersey.internal.util.PropertiesHelper;
-import org.glassfish.jersey.spi.ExecutorServiceProvider;
-
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Configuration;
@@ -51,6 +36,21 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
+
+import io.helidon.common.Version;
+import io.helidon.webclient.WebClient;
+import io.helidon.webclient.WebClientRequestBuilder;
+import io.helidon.webclient.WebClientResponse;
+import org.glassfish.jersey.client.ClientAsyncExecutorLiteral;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.ClientRequest;
+import org.glassfish.jersey.client.ClientResponse;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.client.spi.AsyncConnectorCallback;
+import org.glassfish.jersey.client.spi.Connector;
+import org.glassfish.jersey.internal.util.PropertiesHelper;
+import org.glassfish.jersey.spi.ExecutorServiceProvider;
 
 /**
  * A {@link Connector} that utilizes the Helidon HTTP Client to send and receive
@@ -142,7 +142,7 @@ class HelidonConnector implements Connector {
         }
 
         for (String propertyName : request.getPropertyNames()) {
-            Object property = request.resolveProperty(propertyName, null);
+            Object property = request.getProperty(propertyName);
             if (!propertyName.startsWith("jersey") && String.class.isInstance(property)) {
                 webClientRequestBuilder.property(propertyName, (String) property);
             }
